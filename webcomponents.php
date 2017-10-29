@@ -59,6 +59,11 @@ class WebcomponentsPlugin extends Plugin
     $polyfill = $base . 'webcomponents/webcomponentsjs/webcomponents-lite.min.js';
     // find all files
     $files = $this->findHTMLIncludes($dir, $base);
+    $imports = '';
+    // include our elements
+    foreach ($files as $file) {
+      $imports .= '<link rel="import" href="' . $file . '">' . "\n";
+    }
     // build the inline import
     $inline = "
 // simple performance imporvements for Polymer
@@ -78,20 +83,13 @@ window.onload = function() {
     e.src = '$polyfill';
     document.head.appendChild(e);
   }
-  ";
-    // include our elements
-    foreach ($files as $file) {
-      $inline .= "
-  var link = document.createElement('link');
-  link.rel = 'import';
-  link.href = '$file';
-  document.head.appendChild(link);" . "\n";
-    }
-    // close the function
-    $inline .="
-  };";
+};
+// HTML imports for webcomponents
+</script>
+'" . $imports . "'
+<script>// END of HTML imports for Webcomponents";
     // add it into the document
-    $assets->addInlineJs($inline);
+    $assets->addInlineJs($inline, array('priority' => 102, 'group' => 'head'));
   }
 
   /**
