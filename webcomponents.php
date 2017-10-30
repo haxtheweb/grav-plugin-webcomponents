@@ -19,6 +19,7 @@ class WebcomponentsPlugin extends Plugin
   {
     return [
       'onThemeInitialized' => ['onThemeInitialized', 0],
+      'onTwigTemplatePaths' => ['onTwigTemplatePaths', 100],
       'onPluginsInitialized' => ['onPluginsInitialized', 100000]
     ];
   }
@@ -28,42 +29,155 @@ class WebcomponentsPlugin extends Plugin
    */
   public function onPluginsInitialized()
   {
-      // Don't proceed if we are in the admin plugin
-      if ($this->isAdmin()) {
-        return;
-      }
+    // Don't proceed if we are in the admin plugin
+    if ($this->isAdmin()) {
+      return;
+    }
 
-      $uri = $this->grav['uri'];
-      // load autoloaded paths from manifest files in our apps
-      $routes = $this->loadWebcomponentApps();
-      foreach ($routes as $machine_name => $app) {
-        // if our route matches one we have, load up
-        if ("/apps/$machine_name" == $uri->path()) {
-          $this->activeApp = (array)$app;
-          $this->enable([
-              'onPageInitialized' => ['onPageInitialized', 100000]
-          ]);
+    $uri = $this->grav['uri'];
+    // load autoloaded paths from manifest files in our apps
+    $routes = $this->loadWebcomponentApps();
+    foreach ($routes as $machine_name => $app) {
+      // if our route matches one we have, load up
+      if ("/apps/$machine_name" == $uri->path()) {
+        $this->activeApp = (array)$app;
+        $this->enable([
+            'onPageInitialized' => ['onPageInitialized', 0]
+        ]);
+      }
+      // check for data endpoints if they exist
+      if (isset($app['endpoints'])) {
+        foreach ($app['endpoints'] as $path => $endpoint) {
+          if ("/apps/$machine_name/$path" == $uri->path()) {
+            $this->activeApp = (array)$app;
+            $this->enable([
+                'onPageInitialized' => ['onPageInitializedData', 0]
+            ]);
+          }
         }
       }
+    }
   }
+  /**
+   * Add current directory to twig lookup paths.
+   */
+  public function onTwigTemplatePaths()
+  {
+      $this->grav['twig']->twig_paths[] = __DIR__ . '/templates';
+  }
+
 
   /**
    * Autoload a webcomponent app.
    */
   public function onPageInitialized()
   {
-    // @todo more here as this is 404'ing.
-    $output = $this->renderApp($this->activeApp);
-    // what I think should work
-    $this->grav['page']->content($output);
-    // @not working, not what I want to do, but gets it on the page
-    $assets = $this->grav['assets'];
-    $assets->addInlineJs('</script>' . $output . '<script>', array('priority' => 102, 'group' => 'head'));
+    // set a dummy page
+    $page = new Page;
+    $page->init(new \SplFileInfo(__DIR__ . '/pages/webcomponents-app.md'));
+    unset($this->grav['page']);
+    $this->grav['page'] = $page;
   }
 
   /**
-  * Initialize configuration
-  */
+   * Autoload a webcomponent app data path.
+   */
+  public function onPageInitializedData()
+  {
+    // return data
+    $return = array();
+    // validate CSRF token and ensure we have something
+    if (is_array($this->activeApp) || Utils::getNonce('webcomponentapp') == $_GET['token']) {
+      $app = $this->activeApp;
+      $machine_name = $app['machine_name'];
+      $args = explode('?', str_replace($this->grav['base_url'], '', $_SERVER['REQUEST_URI']));
+      $args = explode('/', $args[0]);
+      // this ensures that apps/machine-name get shifted off
+      array_shift($args);
+      array_shift($args);
+      array_shift($args);
+      // match the route that was specified in $app['endpoints']
+      $endpointpath = NULL;
+      if (isset($app['endpoints'])) {
+        foreach ($app['endpoints'] as $path => $endpoint) {
+          // we're going to compare the args array and the endpoint.
+          // to do this we are going to convert the path to an array.
+          $path_ary = explode('/', $path);
+          // see if args and path are the same length
+          if (count($path_ary) == count($args)) {
+            // see if there are any differences between the two
+            $ary_diff = array_diff($path_ary, $args);
+            // if no differences then we found the path and we should exit
+            // immediately
+            if (empty($ary_diff)) {
+              $endpointpath = $path;
+              break;
+            }
+            // if there is a difference in the path but the only differences
+            // are wildcards then it's a match
+            else {
+              $mismatch = false;
+              foreach ($ary_diff as $diff) {
+                if ($diff != '%') {
+                  $mismatch = true;
+                }
+              }
+              // if we went through the diffs and there were no
+              // matches other than % then it's a match
+              if (!$mismatch) {
+                $endpointpath = $path;
+              }
+            }
+          }
+        }
+      }
+      // attempt autoload here in the event this was invoked via a load all
+      if (isset($app['autoload']) && $app['autoload'] === TRUE) {
+        include_once $app['filepath'] . $machine_name . '.php';
+      }
+      // make sure the machine name and the data callback both exist
+      if (!empty($machine_name) && !empty($app) && isset($app['endpoints']) && function_exists($app['endpoints'][$endpointpath]->callback)) {
+        $params = filter_var_array($_GET, FILTER_SANITIZE_STRING);
+        // include additional url arguments to downstream
+        // check for extended args on this call
+        $return = call_user_func($app['endpoints'][$endpointpath]->callback, $machine_name, WEBCOMPONENTS_APP_PATH . '/' . $machine_name, $params, $args);
+      }
+      else {
+        $return = array(
+          'status' => '404',
+          'detail' => 'Not a valid callback',
+        );
+      }
+    }
+    else {
+      $return = array(
+        'status' => '403',
+        'detail' => 'Invalid CSRF token',
+      );
+    }
+    // nothing set so make it 200 even though it already is
+    if (empty($return['status'])) {
+      $return['status'] = '200';
+    }
+    // ensure there's some form of detail even if empty
+    if (empty($return['detail'])) {
+      $return['detail'] = '';
+    }
+    // ensure there's some form of detail even if empty
+    if (empty($return['environment'])) {
+      $return['environment'] = array();
+    }
+    // set output headers as JSON
+    header('Content-Type: application/json');
+    header('Status: ' . $return['status']);
+    // return JSON!
+    echo json_encode($return);
+    exit();
+  }
+
+  /**
+   * Initialize configuration
+   */
   public function onThemeInitialized()
   {
     if ($this->isAdmin()) {
@@ -94,6 +208,12 @@ class WebcomponentsPlugin extends Plugin
    * If enabled on this page, load the JS + CSS and set the selectors.
    */
   public function onTwigSiteVariables() {
+    // see if we're actually rendering an app instead of loading dependencies
+    if (is_array($this->activeApp)) {
+      $twig = $this->grav['twig'];
+      $twig->template = 'webcomponents-app.html.twig';
+      $twig->twig_vars['webcomponents'] = $this->renderApp($this->activeApp);
+    }
     $config = $this->config->get('plugins.webcomponents');
     // discover and autoload our components
     $assets = $this->grav['assets'];
@@ -239,19 +359,19 @@ window.onload = function() {
           }
           // support for additional properties
           if (isset($app['properties'])) {
-            $return[$manifest['name']]['properties'] = $app['properties'];
+            $return[$manifest['name']]['properties'] = (array)$app['properties'];
           }
           // support for additional slots
           if (isset($app['slots'])) {
-            $return[$manifest['name']]['slots'] = $app['slots'];
+            $return[$manifest['name']]['slots'] = (array)$app['slots'];
           }
           // support for a endpoint paths for getting data into the app
           if (isset($app['endpoints'])) {
-            $return[$manifest['name']]['endpoints'] = $app['endpoints'];
+            $return[$manifest['name']]['endpoints'] = (array)$app['endpoints'];
           }
           // support for discovering and autoloading an element-name.php file
           // to make decoupled development even easier!
-          if (file_exists(str_replace('manifest.json', $manifest['name'] . '.php', $file))) {
+          if (file_exists(str_replace('manifest.json', $manifest['name'] . '.php', $tmp))) {
             $return[$manifest['name']]['autoload'] = TRUE;
           }
           // support automatically making a block for this element
@@ -280,7 +400,7 @@ window.onload = function() {
         // check for autoloading flag if so then load the file which should contain
         // the functions needed to make the call happen
         if (isset($apps[$machine_name]['autoload']) && $apps[$machine_name]['autoload'] === TRUE) {
-          include_once $apps[$machine_name]['path'] . $machine_name . '.php';
+          include_once $apps[$machine_name]['filepath'] . $machine_name . '.php';
         }
         $apps[$machine_name]['machine_name'] = $machine_name;
         return $apps[$machine_name];
@@ -310,20 +430,18 @@ window.onload = function() {
     // ensure this exists
     if (!empty($machine_name) && !empty($app)) {
       $hash = filesize($app['filepath'] . 'manifest.json');
-      $inline = '</script>' . $this->createHTMLImport($app['path'] . 'manifest.json?h' . $hash, 'manifest') . '<script>';
-      $assets->addInlineJs($inline, array('priority' => 102, 'group' => 'head'));
-
+      $return['manifest'] = $app['path'] . 'manifest.json?h' . $hash;
       $hash = filesize($app['filepath'] . 'src/' . $machine_name . '/' . $machine_name . '.html');
-      $inline = '</script>' . $this->createHTMLImport($app['path'] . 'src/' . $machine_name . '/' . $machine_name . '.html?h' . $hash, 'manifest') . '<script>';
-      $assets->addInlineJs($inline, array('priority' => 102, 'group' => 'head'));
+      $return['import'] = $app['path'] . 'src/' . $machine_name . '/' . $machine_name . '.html?h' . $hash;
       // construct the tag base to be written
       $vars = array(
         'tag' => $machine_name,
         'properties' => array(),
       );
       // support for properties to be mixed in automatically
-      if (isset($app->properties)) {
-        foreach ($app->properties as $key => $property) {
+      if (isset($app['properties'])) {
+        foreach ($app['properties'] as $key => $property) {
+          $property = (array)$property;
           // support for simple function based callbacks for properties from functions
           if (is_array($property) && isset($property['callback'])) {
             // ensure it exists of that would be bad news bears
@@ -344,8 +462,11 @@ window.onload = function() {
         }
       }
       // support for slots to be mixed in automatically
-      if (isset($app->slots)) {
-        foreach ($app->slots as $key => $slot) {
+      if (isset($app['slots'])) {
+        foreach ($app['slots'] as $key => $slot) {
+          if (is_object($slot)) {
+            $slot = (array)$slot;
+          }
           // support for simple function based callbacks for slots from functions
           if (is_array($slot) && isset($slot['callback'])) {
             // ensure it exists of that would be bad news bears
@@ -366,14 +487,14 @@ window.onload = function() {
         }
       }
       // special properties that register endpoints
-      if (isset($app->endpoints)) {
+      if (isset($app['endpoints'])) {
         // all end points will be able to use this for simple, secure construction
         // @see secure-request webcomponent for behavior details if doing app development
         $vars['properties']['csrf-token'] = Utils::getNonce('webcomponentapp');
-        $vars['properties']['end-point'] = $this->getBaseURL() . WEBCOMPONENTS_APP_PATH . '/' . $machine_name;
-        $vars['properties']['base-path'] = $this->getBaseURL() . WEBCOMPONENTS_APP_PATH . '/';
+        $vars['properties']['end-point'] = $this->grav['base_url'] . '/' . WEBCOMPONENTS_APP_PATH . '/' . $machine_name;
+        $vars['properties']['base-path'] = $this->grav['base_url'] . '/' . WEBCOMPONENTS_APP_PATH . '/';
         // see if anything needs ripped into the element
-        foreach ($app->endpoints as $endpointpath => $endpoint) {
+        foreach ($app['endpoints'] as $endpointpath => $endpoint) {
           if (isset($endpoint->property)) {
             $vars['properties'][$endpoint->property] = $vars['properties']['end-point'] . '/' . $endpointpath . '?token=' . $vars['properties']['csrf-token'];
           }
@@ -382,7 +503,7 @@ window.onload = function() {
       // support for one page apps to pass down their root correctly
       else if (isset($app['opa-root'])) {
         $vars['properties']['csrf-token'] = Utils::getNonce('webcomponentapp');
-        $vars['properties']['base-path'] = $this->getBaseURL() . WEBCOMPONENTS_APP_PATH . '/';
+        $vars['properties']['base-path'] = $this->grav['base_url'] . '/' . WEBCOMPONENTS_APP_PATH . '/';
       }
       // support compressing slots into the innerHTML tag
       if (isset($vars['slots'])) {
@@ -409,7 +530,8 @@ window.onload = function() {
         $vars['properties']['class'] .= ' ' . WEBCOMPONENTS_CLASS_IDENTIFIER;
       }
 
-      $return = $this->renderWebcomponent($vars);
+      $vars['properties'] = $this->webcomponentAttributes($vars['properties']);
+      $return['app'] = $vars;
     }
     return $return;
   }
