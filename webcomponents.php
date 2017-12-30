@@ -180,9 +180,6 @@ class WebcomponentsPlugin extends Plugin
    */
   public function onThemeInitialized()
   {
-    if ($this->isAdmin()) {
-      return;
-    }
 
     $load_events = false;
 
