@@ -180,7 +180,10 @@ class WebcomponentsPlugin extends Plugin
    */
   public function onThemeInitialized()
   {
-
+    // Don't proceed if we are in the admin plugin
+    if ($this->isAdmin()) {
+      return;
+    }
     $load_events = false;
 
     // if not always_load see if the theme expects to load the webcomponents plugin
