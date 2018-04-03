@@ -1,5 +1,5 @@
 name: Webcomponents - Polymer
-version: 1.0.1
+version: 1.0.6
 description: "Auto-loading of webcomponents and associated polyfill so you can use custom elements in your site."
 icon: google
 author:
