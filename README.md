@@ -16,11 +16,11 @@ If for some reason you can't use GPM you can manually install this plugin. Downl
 
 You should now have all the plugin files under:
 
-	/your/site/grav/user/plugins/webcomponents
+    /your/site/grav/user/plugins/webcomponents
 
 # Usage
 
-Create your own or download webcomponents from webcomponents.org. While not required, a library like Polymer is a great way to get started with Webcomponent based development. Place all custom webcomponents in the `user/webcomponents` directory and they'll automatically be added as imports to every page! It's that easy!
+Create your own or download webcomponents from webcomponents.org. While not required, a library like Polymer is a great way to get started with Webcomponent based development. Place all custom webcomponents in the `user/data/webcomponents` directory and they'll automatically be added as imports to every page! It's that easy!
 
 
 ## Configuration
