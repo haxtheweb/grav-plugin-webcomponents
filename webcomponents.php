@@ -5,6 +5,9 @@ use \Grav\Common\Plugin;
 use \Grav\Common\Grav;
 use \Grav\Common\Utils;
 use \Grav\Common\Page\Page;
+use RocketTheme\Toolbox\File\File;
+use Symfony\Component\Yaml\Yaml;
+use Grav\Plugin\AtoolsPlugin;
 
 define('WEBCOMPONENTS_CLASS_IDENTIFIER', 'webcomponent-plugin-selector');
 define('WEBCOMPONENTS_APP_PATH', 'apps');
@@ -29,6 +32,10 @@ class WebcomponentsPlugin extends Plugin
    */
   public function onPluginsInitialized()
   {
+    // Verify installation files.
+    if (!($this->verifyWebcomponentsInstallation())){
+      return;
+    }
     // Don't proceed if we are in the admin plugin
     if ($this->isAdmin()) {
       return;
@@ -209,7 +216,7 @@ class WebcomponentsPlugin extends Plugin
    */
   public function onTwigSiteVariables() {
     // see if we're actually rendering an app instead of loading dependencies
-    if (is_array($this->activeApp)) {
+    if (!empty($this->activeApp) && is_array($this->activeApp)) {
       $twig = $this->grav['twig'];
       $twig->template = 'webcomponents-app.html.twig';
       $twig->twig_vars['webcomponents'] = $this->renderApp($this->activeApp);
@@ -219,7 +226,7 @@ class WebcomponentsPlugin extends Plugin
     $assets = $this->grav['assets'];
     // directory they live in physically
     $dir = $this->webcomponentsDir();
-    $polyfill = $this->getBaseURL() . 'webcomponents/webcomponentsjs/webcomponents-lite.min.js';
+    $polyfill = $this->getBaseURL() . 'bower_components/webcomponentsjs/' . webcomponentsPlugin::polyfillLibrary();
     // find all files
     $files = $this->findWebcomponentFiles($dir, $this->getBaseURL());
     $imports = '';
@@ -229,7 +236,7 @@ class WebcomponentsPlugin extends Plugin
     }
     // build the inline import
     $inline = "
-// simple performance imporvements for Polymer
+// simple performance improvements for Polymer
 window.Polymer = {
   dom: 'shady',
   lazyRegister: true
@@ -254,24 +261,52 @@ window.onload = function() {
 
   /**
    * Return the base url for forming paths on the front end.
-   * @return string  The base path to the user / webcomponents directory
+   * @return string  The base url path to the user / data / webcomponents directory
    */
   public function getBaseURL() {
-    return $this->grav['base_url'] . '/user/webcomponents/';
+    return $this->grav['base_url'] . '/user/data/webcomponents/';
   }
 
   /**
    * Return the file system directory for forming paths on the front end.
-   * @return string  The base path to the user / webcomponents directory
+   * @return string  The file system path to the user / data / webcomponents directory
    */
   public function webcomponentsDir() {
-    return getcwd() . '/user/webcomponents/';
+    return getcwd() . '/user/data/webcomponents/';
   }
+
+  /**
+   * Returns the chosen webcomponentsjs library.
+   */
+  public static function polyfillLibrary(){
+    $grav = new Grav();
+    $choice = $grav::instance()['config']['plugins']['webcomponents']['polyfill'];
+
+    switch ($choice) {
+      case "full-min":
+        $polyfill_choice = "webcomponents.min.js";
+      break;
+      case "lite-min":
+        $polyfill_choice = "webcomponents-lite.min.js";
+      break;
+      case "full":
+        $polyfill_choice = "webcomponents.js";
+      break;
+      case "lite":
+        $polyfill_choice = "webcomponents-lite.js";
+      break;
+      default:
+        $polyfill_choice = "webcomponents-lite.min.js";
+    }
+
+    return $polyfill_choice;
+  }
+
   /**
    * Simple HTML Import render.
    */
   public function createHTMLImport($path, $rel = 'import') {
-    return '<link rel="' . $rel . '" href="' . $path . '">';
+    return '<link rel="' . $rel . '" href="' . $path . '" />';
   }
 
   /**
@@ -555,4 +590,22 @@ window.onload = function() {
     }
     return $attributes ? ' ' . implode(' ', $attributes) : '';
   }
+
+    /**
+     * Check if webcomponents are installed.
+     */
+    private function verifyWebcomponentsInstallation() {
+        $required_files = array(
+            $this->webcomponentsDir() . 'bower_components/webcomponentsjs/webcomponents-lite.min.js',
+      );
+
+      foreach ($required_files as $file) {
+          if (!file_exists($file)) {
+              $message = 'Missing Webcomponents dependency file at ' . $file;
+              AtoolsPlugin::disablePlugin($message, 'error', 'webcomponents');
+              return false;
+          }
+      }
+      return true;
+    }
 }
