@@ -1,2 +1,3 @@
 enabled: true
 always_load: true
+polyfill: lite-min

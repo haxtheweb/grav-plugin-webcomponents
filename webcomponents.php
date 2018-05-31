@@ -226,7 +226,7 @@ class WebcomponentsPlugin extends Plugin
     $assets = $this->grav['assets'];
     // directory they live in physically
     $dir = $this->webcomponentsDir();
-    $polyfill = $this->getBaseURL() . 'bower_components/webcomponentsjs/webcomponents-lite.min.js';
+    $polyfill = $this->getBaseURL() . 'bower_components/webcomponentsjs/' . webcomponentsPlugin::polyfillLibrary();
     // find all files
     $files = $this->findWebcomponentFiles($dir, $this->getBaseURL());
     $imports = '';
@@ -274,6 +274,34 @@ window.onload = function() {
   public function webcomponentsDir() {
     return getcwd() . '/user/data/webcomponents/';
   }
+
+  /**
+   * Returns the chosen webcomponentsjs library.
+   */
+  public static function polyfillLibrary(){
+    $grav = new Grav();
+    $choice = $grav::instance()['config']['plugins']['webcomponents']['polyfill'];
+
+    switch ($choice) {
+      case "full-min":
+        $polyfill_choice = "webcomponents.min.js";
+      break;
+      case "lite-min":
+        $polyfill_choice = "webcomponents-lite.min.js";
+      break;
+      case "full":
+        $polyfill_choice = "webcomponents.js";
+      break;
+      case "lite":
+        $polyfill_choice = "webcomponents-lite.js";
+      break;
+      default:
+        $polyfill_choice = "webcomponents-lite.min.js";
+    }
+
+    return $polyfill_choice;
+  }
+
   /**
    * Simple HTML Import render.
    */

@@ -34,3 +34,13 @@ form:
         0: Disabled
       validate:
         type: bool
+    polyfill:
+      type: select
+      label: WebComponents Polyfill
+      help: Choose a webcomponents polyfill level to use.  Recommend using a minimized version for production.
+      size: medium
+      options:
+        lite-min: Lite library, minified
+        full-min: Full library, minified
+        lite: Lite library
+        full: Full library
