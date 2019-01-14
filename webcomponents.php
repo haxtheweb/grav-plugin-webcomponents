@@ -262,7 +262,12 @@ class WebcomponentsPlugin extends Plugin
    * @return string  The base url path to the user / data / webcomponents directory
    */
   public function getBaseURL() {
-    return $this->grav['base_url'] . '/user/data/webcomponents/';
+    if ($this->config->get('plugins.webcomponents.cdn')) {
+      return $this->config->get('plugins.webcomponents.cdn');
+    }
+    else {
+      return $this->grav['base_url'] . '/user/data/webcomponents/';
+    }
   }
 
   /**

@@ -24,3 +24,10 @@ form:
         0: Disabled
       validate:
         type: bool
+    cdn:
+      type: textfield
+      label: CDN base address
+      highlight: 1
+      default: ''
+      validate:
+        type: string
