@@ -12,8 +12,6 @@ use Grav\Plugin\AtoolsPlugin;
 define('WEBCOMPONENTS_CLASS_IDENTIFIER', 'webcomponent-plugin-selector');
 define('WEBCOMPONENTS_APP_PATH', 'apps');
 
-require 'WebComponentsService.php';
-
 class WebcomponentsPlugin extends Plugin
 {
   public $activeApp;
@@ -34,10 +32,6 @@ class WebcomponentsPlugin extends Plugin
    */
   public function onPluginsInitialized()
   {
-    // Verify installation files.
-    if (!($this->verifyWebcomponentsInstallation())){
-      return;
-    }
     // Don't proceed if we are in the admin plugin
     if ($this->isAdmin()) {
       return;
@@ -208,10 +202,59 @@ class WebcomponentsPlugin extends Plugin
     $config = $this->config->get('plugins.webcomponents');
     $assets = $this->grav['assets'];
     // hook into webomponents service to get our header material we need for the polyfill
-    $wcService = new WebComponentsService();
-    $inline = $wcService->applyWebcomponents($this->getBaseURL());
+    $inline = $this->applyWebcomponents($this->getBaseURL());
     // add it into the document
-    $assets->addInlineJs($inline, array('priority' => 102, 'group' => 'head'));
+    $assets->addInlineJs('</script>' . $inline . '<script>', array('priority' => 102, 'group' => 'head'));
+  }
+
+  /**
+   * This applies all pieces of a standard build appended to the header
+   */
+  public function applyWebcomponents($directory = '/') {
+    return 
+      $this->getPolyfill($directory) .
+      $this->getBabel($directory) .
+      $this->getBuild($directory);
+  }
+  /**
+   * Return the polyfill standard method of application
+   */
+  public function getPolyfill($directory = '/') {
+    return '<!-- cross platform polyfill -->
+    <script>if (!window.customElements) { document.write("<!--") }</script>
+    <script defer="defer" type="text/javascript" src="' . $directory . 'build/es6/node_modules/@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js"></script>
+    <!--! do not remove -->
+    <script defer="defer" src="' . $directory . 'build/es6/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script defer="defer" src="' . $directory . 'build/es6/node_modules/web-animations-js/web-animations-next-lite.min.js"></script>
+    <!-- / cross platform polyfill --';  
+  }
+  /**
+   * Get babel helpers to ensure compiled versions have appropriate functions
+   */
+  public function getBabel($directory = '/') {
+    return '<!-- babel -->
+    <script src="' . $directory . 'babel/babel-top.js"></script>
+    <script src="' . $directory . 'babel/babel-bottom.js"></script>
+    <!-- / babel -->';
+  }
+
+  /**
+   * Front end logic for ES5 or ES6 version to deliver
+   */
+  public function getBuild($directory  = '/') {
+    return '<!-- web component build -->
+    <script nomodule>window.nomodule = true;</script>
+    <script>
+      function __supportsImports() { try { new Function(\'import("")\'); return true; } catch (err) { return false; } }
+      // lack of es modules or dynamic imports requires amd-es5 bundle
+      if (window.nomodule || !__supportsImports()) {
+        define(["' . $directory . 'build/es5-amd/build.js"], function () { "use strict" });
+        document.write("<!--")
+      }
+    </script>
+    <script type="module" defer="defer" src="' . $directory . 'build/es6/build.js"></script>
+    <!--! do not remove -->
+    <!-- / web component build -->';
   }
 
   /**
@@ -282,6 +325,7 @@ class WebcomponentsPlugin extends Plugin
    */
   public function loadPackageJson() {
     if (file_exists($this->webcomponentsDir() . 'package.json')) {
+      $tmp = $this->webcomponentsDir() . 'package.json';
       return json_decode(file_get_contents($tmp));
     }
   }
@@ -293,7 +337,7 @@ class WebcomponentsPlugin extends Plugin
     ;
     // need to find a package.json
     if ($package = $this->loadPackageJson()) {
-      foreach( $package['dependencies'] as $location => $version) {
+      foreach( $package->dependencies as $location => $version) {
         $dir = $this->webcomponentsDir() . 'node_modules/' . $location;
         $files = $this->findWebcomponentFiles($dir, $this->getBaseURL() . 'node_modules/' . $location, array(), '.json');
       }
@@ -529,22 +573,4 @@ class WebcomponentsPlugin extends Plugin
     }
     return $attributes ? ' ' . implode(' ', $attributes) : '';
   }
-
-    /**
-     * Check if webcomponents are installed.
-     */
-    private function verifyWebcomponentsInstallation() {
-        $required_files = array(
-            $this->webcomponentsDir() . 'bower_components/webcomponentsjs/webcomponents-lite.min.js',
-      );
-
-      foreach ($required_files as $file) {
-          if (!file_exists($file)) {
-              $message = 'Missing Webcomponents dependency file at ' . $file;
-              AtoolsPlugin::disablePlugin($message, 'error', 'webcomponents');
-              return false;
-          }
-      }
-      return true;
-    }
 }
