@@ -12,6 +12,8 @@ use Grav\Plugin\AtoolsPlugin;
 define('WEBCOMPONENTS_CLASS_IDENTIFIER', 'webcomponent-plugin-selector');
 define('WEBCOMPONENTS_APP_PATH', 'apps');
 
+require 'WebComponentsService.php';
+
 class WebcomponentsPlugin extends Plugin
 {
   public $activeApp;
@@ -187,28 +189,10 @@ class WebcomponentsPlugin extends Plugin
    */
   public function onThemeInitialized()
   {
-    // Don't proceed if we are in the admin plugin
-    if ($this->isAdmin()) {
-      return;
-    }
-    $load_events = false;
-
-    // if not always_load see if the theme expects to load the webcomponents plugin
-    if (!$this->config->get('plugins.webcomponents.always_load')) {
-      $theme = $this->grav['theme'];
-      if (isset($theme->load_webcomponents_plugin) && $theme->load_webcomponents_plugin) {
-        $load_events = true;
-      }
-    }
-    else {
-      $load_events = true;
-    }
-
-    if ($load_events) {
-      $this->enable([
-        'onTwigSiteVariables' => ['onTwigSiteVariables', 0]
-      ]);
-    }
+    // enable our twig site vars which will apply the polyfills and built files to page
+    $this->enable([
+      'onTwigSiteVariables' => ['onTwigSiteVariables', 0]
+    ]);
   }
 
   /**
@@ -222,39 +206,10 @@ class WebcomponentsPlugin extends Plugin
       $twig->twig_vars['webcomponents'] = $this->renderApp($this->activeApp);
     }
     $config = $this->config->get('plugins.webcomponents');
-    // discover and autoload our components
     $assets = $this->grav['assets'];
-    // directory they live in physically
-    $dir = $this->webcomponentsDir();
-    $polyfill = $this->getBaseURL() . 'bower_components/webcomponentsjs/' . webcomponentsPlugin::polyfillLibrary();
-    // find all files
-    $files = $this->findWebcomponentFiles($dir, $this->getBaseURL());
-    $imports = '';
-    // include our elements
-    foreach ($files as $file) {
-      $imports .= $this->createHTMLImport($file) . "\n";
-    }
-    // build the inline import
-    $inline = "
-// simple performance improvements for Polymer
-window.Polymer = {
-  dom: 'shady',
-  lazyRegister: true
-};
-window.onload = function() {
-  if ('registerElement' in document
-    && 'import' in document.createElement('link')
-    && 'content' in document.createElement('template')) {
-    // platform is good!
-  }
-  else {
-    // polyfill the platform!
-    var e = document.createElement('script');
-    e.src = '$polyfill';
-    document.head.appendChild(e);
-  }
-};
-</script>" . $imports . "<script>";
+    // hook into webomponents service to get our header material we need for the polyfill
+    $wcService = new WebComponentsService();
+    $inline = $wcService->applyWebcomponents($this->getBaseURL());
     // add it into the document
     $assets->addInlineJs($inline, array('priority' => 102, 'group' => 'head'));
   }
@@ -276,52 +231,21 @@ window.onload = function() {
   }
 
   /**
-   * Returns the chosen webcomponentsjs library.
-   */
-  public static function polyfillLibrary(){
-    $grav = new Grav();
-    $choice = $grav::instance()['config']['plugins']['webcomponents']['polyfill'];
-
-    switch ($choice) {
-      case "full-min":
-        $polyfill_choice = "webcomponents.min.js";
-      break;
-      case "lite-min":
-        $polyfill_choice = "webcomponents-lite.min.js";
-      break;
-      case "full":
-        $polyfill_choice = "webcomponents.js";
-      break;
-      case "lite":
-        $polyfill_choice = "webcomponents-lite.js";
-      break;
-      default:
-        $polyfill_choice = "webcomponents-lite.min.js";
-    }
-
-    return $polyfill_choice;
-  }
-
-  /**
-   * Simple HTML Import render.
-   */
-  public function createHTMLImport($path, $rel = 'import') {
-    return '<link rel="' . $rel . '" href="' . $path . '" />';
-  }
-
-  /**
    * Sniff out html files in a directory
    * @param  string $dir a directory to search for .html includes
    * @return array       an array of html files to look for web components in
    */
-  public function findWebcomponentFiles($dir, $base, $ignore = array(), $find = '.html') {
+  public function findWebcomponentFiles($dir, $base, $ignore = array(), $find = '.js') {
     $files = array();
     // common things to ignore
     $ignore[] = '.';
     $ignore[] = '..';
     $ignore[] = 'index.html';
+    $ignore[] = 'demo';
+    $ignore[] = 'package.json';
+    $ignore[] = 'node_modules';
     if (is_dir($dir)) {
-      // step into the polymer directory and find all html templates
+      // step into the directory and find all files that match
       $di = new \DirectoryIterator($dir);
       foreach ($di as $fileinfo) {
         $fname = $fileinfo->getFilename();
@@ -353,14 +277,31 @@ window.onload = function() {
     }
     return $files;
   }
-
+  /**
+   * Load package.json
+   */
+  public function loadPackageJson() {
+    if (file_exists($this->webcomponentsDir() . 'package.json')) {
+      return json_decode(file_get_contents($tmp));
+    }
+  }
   /**
    * Load all apps where we find a manifest.json file
    */
   public function discoverWebcomponentApps() {
     $return = array();
-    $dir = $this->webcomponentsDir() . 'polymer/apps/';
-    $files = $this->findWebcomponentFiles($dir, $this->getBaseURL() . 'polymer/apps/', array(), '.json');
+    ;
+    // need to find a package.json
+    if ($package = $this->loadPackageJson()) {
+      foreach( $package['dependencies'] as $location => $version) {
+        $dir = $this->webcomponentsDir() . 'node_modules/' . $location;
+        $files = $this->findWebcomponentFiles($dir, $this->getBaseURL() . 'node_modules/' . $location, array(), '.json');
+      }
+    }
+    else {
+      // no package.json, bail
+      return FALSE;
+    }
     // walk the files
     foreach ($files as $file) {
       // read in the manifest file
@@ -466,8 +407,6 @@ window.onload = function() {
     if (!empty($machine_name) && !empty($app)) {
       $hash = filesize($app['filepath'] . 'manifest.json');
       $return['manifest'] = $app['path'] . 'manifest.json?h' . $hash;
-      $hash = filesize($app['filepath'] . 'src/' . $machine_name . '/' . $machine_name . '.html');
-      $return['import'] = $app['path'] . 'src/' . $machine_name . '/' . $machine_name . '.html?h' . $hash;
       // construct the tag base to be written
       $vars = array(
         'tag' => $machine_name,
