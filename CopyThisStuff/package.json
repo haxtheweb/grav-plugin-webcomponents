@@ -31,7 +31,7 @@
     "@lrnwebcomponents/editable-list" : "2.0.1",
     "@lrnwebcomponents/editable-table" : "2.0.1",
     "@lrnwebcomponents/elmsln-loading" : "2.0.1",
-    "@lrnwebcomponents/es-global-bridge" : "2.0.1",
+    "@lrnwebcomponents/es-global-bridge" : "0.2.0",
     "@lrnwebcomponents/fancy-carousel" : "2.0.1",
     "@lrnwebcomponents/flash-card" : "2.0.1",
     "@lrnwebcomponents/game-show-quiz" : "2.0.1",
