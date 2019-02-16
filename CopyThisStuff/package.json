@@ -103,7 +103,7 @@
     "@lrnwebcomponents/magazine-cover" : "2.0.1",
     "@lrnwebcomponents/map-element" : "2.0.1",
     "@lrnwebcomponents/map-menu" : "2.0.1",
-    "@lrnwebcomponents/material-progress" : "2.0.1",
+    "@lrnwebcomponents/material-progress" : "2.0.0-beta1",
     "@lrnwebcomponents/material-word" : "2.0.1",
     "@lrnwebcomponents/materializecss-styles" : "2.0.1",
     "@lrnwebcomponents/md-extra-icons" : "2.0.1",
