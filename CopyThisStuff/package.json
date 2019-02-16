@@ -142,7 +142,7 @@
     "@lrnwebcomponents/responsive-grid" : "2.0.1",
     "@lrnwebcomponents/responsive-utility" : "2.0.1",
     "@lrnwebcomponents/scary-gallery" : "2.0.1",
-    "@lrnwebcomponents/schema-behaviors" : "2.0.1",
+    "@lrnwebcomponents/schema-behaviors" : "2.0.0-alpha2",
     "@lrnwebcomponents/secure-request" : "2.0.1",
     "@lrnwebcomponents/select-menu" : "2.0.1",
     "@lrnwebcomponents/self-check" : "2.0.1",
