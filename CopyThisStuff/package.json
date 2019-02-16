@@ -10,7 +10,7 @@
   "dependencies": {
     "@webcomponents/webcomponentsjs": "2.2.1",
     "web-animations-js":"2.3.1",
-    "@lrnwebcomponents/a11y-behaviors" : "2.0.1",
+    "@lrnwebcomponents/a11y-behaviors" : "2.0.0-beta1",
     "@lrnwebcomponents/a11y-collapse" : "2.0.1",
     "@lrnwebcomponents/a11y-gif-player" : "2.0.1",
     "@lrnwebcomponents/a11y-media-player" : "2.0.1",
