@@ -158,7 +158,7 @@
     "@lrnwebcomponents/simple-timer" : "2.0.1",
     "@lrnwebcomponents/simple-toast" : "2.0.1",
     "@lrnwebcomponents/sites-listing" : "2.0.1",
-    "@lrnwebcomponents/smooth-scroll" : "2.0.1",
+    "@lrnwebcomponents/smooth-scroll" : "2.0.0-beta1",
     "@lrnwebcomponents/social-media-icons" : "2.0.1",
     "@lrnwebcomponents/stop-note" : "2.0.1",
     "@lrnwebcomponents/tab-list" : "2.0.1",
