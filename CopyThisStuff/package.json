@@ -124,7 +124,7 @@
     "@lrnwebcomponents/paper-avatar" : "2.0.1",
     "@lrnwebcomponents/paper-contact" : "2.0.1",
     "@lrnwebcomponents/paper-fab-speed-dial" : "2.0.1",
-    "@lrnwebcomponents/paper-fab-transitions" : "2.0.1",
+    "@lrnwebcomponents/paper-fab-transitions" : "2.0.0-alpha2",
     "@lrnwebcomponents/paper-icon-picker" : "2.0.1",
     "@lrnwebcomponents/paper-input-flagged" : "2.0.1",
     "@lrnwebcomponents/paper-search" : "2.0.1",
