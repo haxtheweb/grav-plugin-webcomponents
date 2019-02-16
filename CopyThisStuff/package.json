@@ -105,7 +105,7 @@
     "@lrnwebcomponents/map-menu" : "2.0.1",
     "@lrnwebcomponents/material-progress" : "2.0.1",
     "@lrnwebcomponents/material-word" : "2.0.1",
-    "@lrnwebcomponents/materializecss-styles" : "2.0.1",
+    "@lrnwebcomponents/materializecss-styles" : "2.0.0-alpha2",
     "@lrnwebcomponents/md-extra-icons" : "2.0.1",
     "@lrnwebcomponents/mdi-iconset-svg" : "2.0.1",
     "@lrnwebcomponents/media-behaviors" : "2.0.1",
