@@ -63,7 +63,7 @@
     "@lrnwebcomponents/lrn-icon" : "2.0.1",
     "@lrnwebcomponents/lrn-icons" : "2.0.1",
     "@lrnwebcomponents/lrn-markdown-editor" : "2.0.1",
-    "@lrnwebcomponents/lrn-math" : "2.0.1",
+    "@lrnwebcomponents/lrn-math" : "2.0.0-beta1",
     "@lrnwebcomponents/lrn-page" : "2.0.1",
     "@lrnwebcomponents/lrn-shared-styles" : "2.0.1",
     "@lrnwebcomponents/lrn-table" : "2.0.1",
