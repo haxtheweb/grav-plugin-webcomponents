@@ -122,7 +122,7 @@
     "@lrnwebcomponents/page-scroll-position" : "2.0.1",
     "@lrnwebcomponents/paper-audio-player" : "2.0.1",
     "@lrnwebcomponents/paper-avatar" : "2.0.1",
-    "@lrnwebcomponents/paper-contact" : "2.0.1",
+    "@lrnwebcomponents/paper-contact" : "2.0.0-alpha2",
     "@lrnwebcomponents/paper-fab-speed-dial" : "2.0.1",
     "@lrnwebcomponents/paper-fab-transitions" : "2.0.1",
     "@lrnwebcomponents/paper-icon-picker" : "2.0.1",
