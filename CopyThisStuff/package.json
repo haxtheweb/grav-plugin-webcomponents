@@ -24,7 +24,7 @@
     "@lrnwebcomponents/cms-hax" : "2.0.1",
     "@lrnwebcomponents/code-editor" : "2.0.1",
     "@lrnwebcomponents/csv-render" : "2.0.1",
-    "@lrnwebcomponents/dl-behavior" : "2.0.1",
+    "@lrnwebcomponents/dl-behavior" : "2.0.0-alpha2",
     "@lrnwebcomponents/drawing-icons" : "2.0.1",
     "@lrnwebcomponents/dropdown-select" : "2.0.1",
     "@lrnwebcomponents/eco-json-schema-form" : "2.0.1",
