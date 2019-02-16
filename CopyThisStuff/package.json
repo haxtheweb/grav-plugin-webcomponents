@@ -127,7 +127,7 @@
     "@lrnwebcomponents/paper-fab-transitions" : "2.0.1",
     "@lrnwebcomponents/paper-icon-picker" : "2.0.1",
     "@lrnwebcomponents/paper-input-flagged" : "2.0.1",
-    "@lrnwebcomponents/paper-search" : "2.0.1",
+    "@lrnwebcomponents/paper-search" : "2.0.0-alpha2",
     "@lrnwebcomponents/paper-stepper" : "2.0.1",
     "@lrnwebcomponents/pdf-browser-viewer" : "2.0.1",
     "@lrnwebcomponents/pdf-element" : "2.0.1",
