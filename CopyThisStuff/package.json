@@ -50,7 +50,7 @@
     "@lrnwebcomponents/img-pan-zoom" : "2.0.1",
     "@lrnwebcomponents/iron-data-table" : "2.0.1",
     "@lrnwebcomponents/item-overlay-ops" : "2.0.1",
-    "@lrnwebcomponents/json-outline-schema" : "2.0.1",
+    "@lrnwebcomponents/json-outline-schema" : "2.0.0-alpha2",
     "@lrnwebcomponents/jwt-login" : "2.0.1",
     "@lrnwebcomponents/license-element" : "2.0.1",
     "@lrnwebcomponents/lrn-aside" : "2.0.1",
