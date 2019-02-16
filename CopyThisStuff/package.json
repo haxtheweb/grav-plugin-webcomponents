@@ -27,7 +27,7 @@
     "@lrnwebcomponents/dl-behavior" : "2.0.1",
     "@lrnwebcomponents/drawing-icons" : "2.0.1",
     "@lrnwebcomponents/dropdown-select" : "2.0.1",
-    "@lrnwebcomponents/eco-json-schema-form" : "2.0.1",
+    "@lrnwebcomponents/eco-json-schema-form" : "2.0.0-alpha2",
     "@lrnwebcomponents/editable-list" : "2.0.1",
     "@lrnwebcomponents/editable-table" : "2.0.1",
     "@lrnwebcomponents/elmsln-loading" : "2.0.1",
