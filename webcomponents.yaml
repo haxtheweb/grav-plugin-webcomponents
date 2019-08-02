@@ -1,2 +1,3 @@
 enabled: true
-cdn: ''
+location: 'https://webcomponents.psu.edu/cdn/'
+other: ''
