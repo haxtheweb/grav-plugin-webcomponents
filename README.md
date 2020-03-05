@@ -1,6 +1,6 @@
 # Grav Webcomponents Plugin
 
-Webcomponents is a [Grav](http://github.com/getgrav/grav) plugin that can be used to get webcomponents integrated into your Grav site with ease. Simply drop your webcomponents into user/webcomponents (unpacked from node_modules).
+Webcomponents is a [Grav](http://github.com/getgrav/grav) plugin that can be used to get webcomponents integrated into your Grav site with ease. Simply drop your webcomponents into user/webcomponents (unpacked from bower_components if using a framework like Polymer).
 
 ## Installation
 
