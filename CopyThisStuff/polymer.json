@@ -1,12 +1,19 @@
 {
   "entrypoint": "dist/build.html",
   "extraDependencies": [
+    "node_modules/@lrnwebcomponents/*/*.js",
+    "node_modules/@lrnwebcomponents/*/lib/*",
+    "node_modules/@lrnwebcomponents/*/lib/*/*.js",
+    "node_modules/@lrnwebcomponents/*/lib/*/*",
+    "node_modules/@lrnwebcomponents/*/lib/*/*/*.js",
     "node_modules/fetch-ie8/fetch.js",
     "node_modules/promise-polyfill/dist/polyfill.min.js",
     "node_modules/web-animations-js/*.map",
     "node_modules/web-animations-js/*.js",
     "node_modules/@webcomponents/webcomponentsjs/*.js",
     "node_modules/@webcomponents/webcomponentsjs/bundles/*.js",
+    "node_modules/monaco-editor/min/**",
+    "node_modules/monaco-editor/min-maps/**",
     "!node_modules/@webcomponents/webcomponentsjs/gulpfile.js"
   ],
   "sources": [],
