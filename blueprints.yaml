@@ -1,5 +1,5 @@
 name: Web components loader
-version: 3.3.2
+version: 3.6.0
 description: "Loads web components and associated polyfill so you can use custom elements in your site."
 icon: google
 author:
@@ -28,9 +28,9 @@ form:
       type: select
       label: Web components location
       highlight: 1
-      default: 'https://webcomponents.psu.edu/cdn/'
+      default: 'https://cdn.webcomponents.psu.edu/cdn/'
       options:
-        https://webcomponents.psu.edu/cdn/: Penn State CDN
+        https://cdn.webcomponents.psu.edu/cdn/: Penn State CDN
         https://cdn.waxam.io/: Waxam CDN
         user/data/webcomponents/: Local libraries folder (user/data/webcomponents/)
         other: Other
