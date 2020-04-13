@@ -1,5 +1,5 @@
 name: Web components loader
-version: 3.6.1
+version: 3.8.0
 description: "Loads web components and associated polyfill so you can use custom elements in your site."
 icon: google
 author:
