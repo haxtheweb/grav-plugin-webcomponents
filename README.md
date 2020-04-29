@@ -44,15 +44,9 @@ $ yarn global add polymer-cli
 Perform this on your computer locally, this doesn't have to be installed on your server.
 
 ## Usage
-- Find `CopyThisStuff` directory in `/your/site/grav/user/plugins/webcomponents`.
+- Find https://github.com/elmsln/unbundled-webcomponents and run the tooling to create your build (`yarn install` then `yarn run build`)
 - create a `/your/site/grav/user/data/webcomponents` directory
-- copy the files from `CopyThisStuff` into `/your/site/grav/user/data/webcomponents`
-
-Then run the following (from the directory you copied it over to) in order to get dependencies:
-```bash
-$ yarn install
-```
-Now run `polymer build` and you'll have files in `build/` which contain everything you'll need to get wired up to web components in your site. Modifying build.js or package.json can be used in order to get new elements and have them be implemented.
+- copy the files from https://github.com/elmsln/unbundled-webcomponents into `/your/site/grav/user/data/webcomponents`
 
 ### Shouldn't I put web components in my theme?
 We don't think so. While it may seem counter intuitive, the theme layer should be effectively implementing what the site is saying is available. If you think of standard HTML tags are being part of this (p, div, a, etc) then it makes a bit more sense. You don't want functional HTML components to ONLY be supplied if your theme is there, you want your theme to implement and leverage the components.
