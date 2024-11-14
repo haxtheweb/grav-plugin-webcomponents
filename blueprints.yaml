@@ -1,14 +1,14 @@
 name: Web components loader
-version: 3.9.0
+version: 9.0.6
 description: "Loads web components and associated polyfill so you can use custom elements in your site."
 icon: google
 author:
   name: Bryan Ollendyke
   email: bto108@psu.edu
-  url: https://www.elmsln.org/
-homepage: https://github.com/elmsln/grav-plugin-webcomponents
-keywords: webcomponents, polymer, plugin
-bugs: https://github.com/elmsln/grav-plugin-webcomponents/issues
+  url: https://haxtheweb.org/
+homepage: https://github.com/haxtheweb/grav-plugin-webcomponents
+keywords: webcomponents, lit, plugin
+bugs: https://github.com/haxtheweb/grav-plugin-webcomponents/issues
 license: Apache 2.0
 
 form:
@@ -30,6 +30,7 @@ form:
       highlight: 1
       default: 'https://cdn.webcomponents.psu.edu/cdn/'
       options:
+        https://cdn.hax.cloud/cdn/: HAX Cloud CDN
         https://cdn.webcomponents.psu.edu/cdn/: Penn State CDN
         https://cdn.waxam.io/: Waxam CDN
         user/data/webcomponents/: Local libraries folder (user/data/webcomponents/)
